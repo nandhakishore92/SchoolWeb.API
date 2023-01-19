@@ -4,7 +4,7 @@ using SchoolWeb.API.Models;
 
 namespace SchoolWeb.API.Providers
 {
-	public class StudentsProvider : BaseProvider
+	public class StudentsProvider : BaseProvider, IStudentsProvider
 	{
 		public StudentsProvider(): base()
 		{ }
@@ -12,7 +12,7 @@ namespace SchoolWeb.API.Providers
 		public StudentsProvider(IUnitOfWork unitOfWork) : base(unitOfWork)
 		{ }
 
-		internal string GetStudent(int studentId)
+		public string GetStudent(int studentId)
 		{
 			return UnitOfWork.StudentRepository.GetById(studentId).StudentName;
 		}

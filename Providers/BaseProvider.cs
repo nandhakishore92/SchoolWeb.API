@@ -16,9 +16,4 @@ namespace SchoolWeb.API.Providers
 			get { return m_UnitOfWork; }
 		}
 	}
-
-	public interface IBaseProvider
-	{
-		IUnitOfWork UnitOfWork { get; }
-	}
 }

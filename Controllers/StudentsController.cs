@@ -6,16 +6,18 @@ using SchoolWeb.API.Providers;
 
 namespace SchoolWeb.API.Controllers
 {
-	public class StudentsController : BaseController<StudentsProvider>
+	public class StudentsController : ControllerBase
 	{
-		public StudentsController(IUnitOfWork unitOfWork)
-			: base(unitOfWork)
-		{ }
+		private readonly IStudentsProvider m_Provider;
+		public StudentsController(IStudentsProvider provider)
+		{
+			m_Provider = provider;
+		}
 
 		[HttpGet("{id}")]
 		public ActionResult<string> Student(int id)
 		{
-			return Provider.GetStudent(id);
+			return m_Provider.GetStudent(id);
 		}
 	}
 }
