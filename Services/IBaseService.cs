@@ -2,7 +2,7 @@
 
 namespace SchoolWeb.API.Providers
 {
-	public interface IBaseProvider
+	public interface IBaseService
 	{
 		IUnitOfWork UnitOfWork { get; }
 	}

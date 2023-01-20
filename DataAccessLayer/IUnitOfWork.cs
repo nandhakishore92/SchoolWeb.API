@@ -10,7 +10,7 @@ using SchoolWeb.API.Models;
 
 namespace SchoolWeb.API.DataAccessLayer
 {
-	public interface IUnitOfWork : IDisposable
+	public interface IUnitOfWork
 	{
 		IRepository<AcademicYear> AcademicYearRepository { get; }
 		IRepository<User> UserRepository { get; }
@@ -61,6 +61,10 @@ namespace SchoolWeb.API.DataAccessLayer
 		IRepository<OtherIncome> OtherIncomeRepository { get; }
 		IRepository<StudentRegistrationHistory> StudentRegistrationHistoryRepository { get; }
 		IRepository<ExceptionLog> LogRepository { get; }
+		void Commit();
+		void Rollback();
+		Task CommitAsync();
+		Task RollbackAsync();
 	}
 
 }

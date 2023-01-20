@@ -17,8 +17,11 @@ namespace SchoolWeb.API.Startup
 
         private static void RegisterCustomServices(this IServiceCollection services)
         {
-            services.AddTransient<IUnitOfWork, UnitOfWork>();
-            services.AddTransient<IStudentsProvider, StudentsProvider>();
+            // Unit Of Work should be one per HTTP request, as we want all the change transactions to be committed to DB in one go. Hence AddScoped.
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // As it is light weight, almost no state, it makes sense to AddTransient here.
+            services.AddTransient<IStudentsService, StudentsService>();
         }
 
         private static void RegisterSwaggerSupport(this IServiceCollection services)

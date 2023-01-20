@@ -63,12 +63,13 @@ namespace SchoolWeb.API.DataAccessLayer
         private IRepository<StudentRegistrationHistory> m_StudentRegistrationHistoryRepository;
         private IRepository<ExceptionLog> m_LogRepository = null;
 
-        public int CurrentAcademicYearId => AcademicYearRepository.Get(filter: ay => ay.IsCurrentAcademicYear).First().AcademicYearId;
+        public int CurrentAcademicYearId => AcademicYearRepository.GetFirstOrDefault(filter: ay => ay.IsCurrentAcademicYear)?.AcademicYearId ?? -1;
 
         public UnitOfWork(SchoolDbContext context)
         {
             m_DbContext = context;
         }
+        
         public IRepository<AcademicYear> AcademicYearRepository
         {
             get
@@ -559,29 +560,16 @@ namespace SchoolWeb.API.DataAccessLayer
             }
         }
 
-        public void Save()
-        {
-            m_DbContext.SaveChanges();
-        }
+		public void Commit()
+			=> m_DbContext.SaveChanges();
 
-        private bool disposed = false;
+        public async Task CommitAsync()
+			=> await m_DbContext.SaveChangesAsync();
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!this.disposed)
-            {
-                if (disposing)
-                {
-                    m_DbContext.Dispose();
-                }
-            }
-            this.disposed = true;
-        }
+		public void Rollback()
+			=> m_DbContext.Dispose();
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+        public async Task RollbackAsync()
+			=> await m_DbContext.DisposeAsync();
     }
 }

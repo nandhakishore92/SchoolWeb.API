@@ -1,23 +1,20 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SchoolWeb.API.DataAccessLayer;
-using SchoolWeb.API.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using SchoolWeb.API.Providers;
 
 namespace SchoolWeb.API.Controllers
 {
 	public class StudentsController : ControllerBase
 	{
-		private readonly IStudentsProvider m_Provider;
-		public StudentsController(IStudentsProvider provider)
+		private readonly IStudentsService m_Service;
+		public StudentsController(IStudentsService service)
 		{
-			m_Provider = provider;
+			m_Service = service;
 		}
 
 		[HttpGet("{id}")]
 		public ActionResult<string> Student(int id)
 		{
-			return m_Provider.GetStudent(id);
+			return m_Service.GetStudent(id);
 		}
 	}
 }

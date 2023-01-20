@@ -1,6 +1,6 @@
 ﻿namespace SchoolWeb.API.Providers
 {
-	public interface IStudentsProvider: IBaseProvider
+	public interface IStudentsService: IBaseService
 	{
 		string GetStudent(int studentId);
 	}

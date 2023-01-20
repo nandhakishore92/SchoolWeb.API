@@ -13,7 +13,13 @@ namespace SchoolWeb.API.DataAccessLayer
             m_DbContext = context;
             m_DbSet = context.Set<T>();
         }
-        public virtual IEnumerable<T> Get(Expression<Func<T, bool>> filter = null,
+
+		#region Get
+		public T GetById(object Id) => m_DbSet.Find(Id);
+
+		public T GetFirstOrDefault(Expression<Func<T, bool>> filter) => m_DbSet.FirstOrDefault(filter);
+
+		public virtual IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
             string includeProperties = "")
         {
@@ -33,59 +39,65 @@ namespace SchoolWeb.API.DataAccessLayer
                 return query.ToList();
         }
 
-        public bool Any(Expression<Func<T, bool>> filter = null)
-        {
-            IQueryable<T> query = m_DbSet;
-            if (filter != null)
-                return query.Any(filter);
+        public bool Any(Expression<Func<T, bool>> filter = null) => filter != null ? m_DbSet.Any(filter) : m_DbSet.Any();
+		#endregion
 
-            return query.Any();
+		#region Add
+		public void Add(T entity) => m_DbContext.Add(entity);
+
+		public void AddRange(IEnumerable<T> entities) => m_DbContext.AddRange(entities);
+
+		public void AddOrUpdate(T entity, bool shouldAdd)
+		{
+			if (shouldAdd)
+				Add(entity);
+			else
+				Update(entity);
+		}
+		#endregion
+
+		#region Update
+		public void Update(T entity) => m_DbContext.Update(entity);
+
+		public void UpdateRange(IEnumerable<T> entities) => m_DbContext.UpdateRange(entities);
+		#endregion
+
+		#region Remove
+		public void Remove(T entity) => m_DbContext.Remove(entity);
+
+		public void RemoveRange(IEnumerable<T> entities) => m_DbContext.RemoveRange(entities);
+		#endregion
+
+		#region Async
+		public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
+			=> await m_DbSet.FirstOrDefaultAsync(filter, cancellationToken);
+
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            string includeProperties = "",
+            CancellationToken cancellationToken = default)
+        {
+			IQueryable<T> query = m_DbSet;
+			if (filter != null)
+				query = query.Where(filter);
+
+			foreach (var includeProperty in includeProperties.Split
+				(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+			{
+				query = query.Include(includeProperty);
+			}
+
+			if (orderBy != null)
+				return await orderBy(query).ToListAsync(cancellationToken);
+			else
+				return await query.ToListAsync(cancellationToken);
         }
 
-        public T GetById(object Id)
-        {
-            return m_DbSet.Find(Id);
-        }
+		public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
+		   => await m_DbContext.AddAsync(entity, cancellationToken);
 
-        public void Add(T obj)
-        {
-            m_DbSet.Add(obj);
-        }
-        public void Update(T obj)
-        {
-            m_DbSet.Attach(obj);
-            m_DbContext.Entry(obj).State = EntityState.Modified;
-        }
-        public void AddOrUpdate(T obj, bool shouldAdd)
-        {
-            if (shouldAdd)
-                Add(obj);
-            else
-                Update(obj);
-        }
-        public void Delete(object Id)
-        {
-            T getObjById = m_DbSet.Find(Id);
-            m_DbSet.Remove(getObjById);
-        }
-        public void Delete(Expression<Func<T, bool>> filter = null)
-        {
-            m_DbSet.RemoveRange(m_DbSet.Where(filter));
-        }
-        public void Save()
-        {
-            m_DbContext.SaveChanges();
-        }
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (this.m_DbContext != null)
-                {
-                    this.m_DbContext.Dispose();
-                    this.m_DbContext = null;
-                }
-            }
-        }
-    }
+		public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+			=> await m_DbContext.AddRangeAsync(entities, cancellationToken);
+		#endregion
+	}
 }

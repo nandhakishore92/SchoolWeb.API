@@ -2,12 +2,12 @@
 
 namespace SchoolWeb.API.Providers
 {
-	public class BaseProvider : IBaseProvider
+	public class BaseService : IBaseService
 	{
 		private readonly IUnitOfWork m_UnitOfWork;
-		public BaseProvider()
+		public BaseService()
 		{ }
-		public BaseProvider(IUnitOfWork unitOfWork)
+		public BaseService(IUnitOfWork unitOfWork)
 		{
 			m_UnitOfWork = unitOfWork;
 		}
