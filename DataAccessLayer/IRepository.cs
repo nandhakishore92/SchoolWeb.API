@@ -2,41 +2,35 @@
 
 namespace SchoolWeb.API.DataAccessLayer
 {
-    public interface IRepository<T> where T : class
+	/// <summary>
+	/// Base Repository Interface.
+	/// </summary>
+	/// <typeparam name="T">The Type of Entity to operate on</typeparam>
+	public interface IRepository<T> where T : class
     {
-		#region Get
-		T GetById(object Id);
-		T GetFirstOrDefault(Expression<Func<T, bool>> filter);
-		IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, 
-            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, 
-            string includeProperties = "");
+		#region Get & Any
+		IEnumerable<T> Get(Expression<Func<T, bool>> filter = null,
+			Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+			string includeProperties = "",
+			int? top = null,
+			int? skip = null);
+		T GetFirstOrDefault(Expression<Func<T, bool>> filter = null,
+			string includeProperties = "",
+			int? top = null,
+			int? skip = null);
+		T GetById(object id);
 		bool Any(Expression<Func<T, bool>> filter = null);
 		#endregion
 
-		#region Add
+		#region Add & Update
 		void Add(T entity);
-		void AddRange(IEnumerable<T> entities);
+		void Update(T entity);
 		void AddOrUpdate(T entity, bool shouldAdd);
 		#endregion
 
-		#region Update
-		void Update(T entity);
-		void UpdateRange(IEnumerable<T> entities);
-		#endregion
-
-		#region Remove
-		void Remove(T entity);
-		void RemoveRange(IEnumerable<T> entities);
-		#endregion
-
-		#region Async
-		Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> expression, CancellationToken cancellationToken = default);
-		Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null,
-			Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-			string includeProperties = "",
-			CancellationToken cancellationToken = default);
-		Task AddAsync(T entity, CancellationToken cancellationToken = default);
-		Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
+		#region Delete
+		void Delete(Object id);
+		void Delete(Expression<Func<T, bool>> filter);
 		#endregion
 	}
 }

@@ -5,48 +5,152 @@ namespace SchoolWeb.API.DataAccessLayer
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private SchoolDbContext m_DbContext;
+		#region Readonlys
+		private readonly SchoolDbContext m_DbContext;
         private readonly DbSet<T> m_DbSet;
+		#endregion
 
-        public Repository(SchoolDbContext context)
+		#region Constructor
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="context">The Database Context</param>
+		public Repository(SchoolDbContext context)
         {
             m_DbContext = context;
             m_DbSet = context.Set<T>();
         }
-
-		#region Get
-		public T GetById(object Id) => m_DbSet.Find(Id);
-
-		public T GetFirstOrDefault(Expression<Func<T, bool>> filter) => m_DbSet.FirstOrDefault(filter);
-
-		public virtual IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null,
-            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-            string includeProperties = "")
-        {
-            IQueryable<T> query = m_DbSet;
-            if (filter != null)
-                query = query.Where(filter);
-
-            foreach (var includeProperty in includeProperties.Split
-                (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-
-            if (orderBy != null)
-                return orderBy(query).ToList();
-            else
-                return query.ToList();
-        }
-
-        public bool Any(Expression<Func<T, bool>> filter = null) => filter != null ? m_DbSet.Any(filter) : m_DbSet.Any();
 		#endregion
 
-		#region Add
-		public void Add(T entity) => m_DbContext.Add(entity);
+		#region Methods
+		#region Get & Any
+		/// <summary>
+		/// Gets a collection of entities based on the specified criteria.
+		/// </summary>
+		/// <param name="filter">The condition the entities must fulfil to be returned</param>
+		/// <param name="orderBy">The function used to order the entities</param>
+		/// <param name="includeProperties">Any other navigation properties to include when returning the collection</param>
+		/// <param name="top">The number of records to limit the results to</param>
+		/// <param name="skip">The number of records to skip</param>
+		/// <returns>A collection of entities</returns>
+		public IEnumerable<T> Get(Expression<Func<T, bool>> filter = null,
+			Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+			string includeProperties = "",
+			int? top = null,
+			int? skip = null)
+		{
+			IQueryable<T> query = m_DbSet;
 
-		public void AddRange(IEnumerable<T> entities) => m_DbContext.AddRange(entities);
+			if (filter != null)
+			{
+				query = query.Where(filter);
+			}
 
+			foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+			{
+				query = query.Include(includeProperty);
+			}
+
+			if (orderBy != null)
+			{
+				query = orderBy(query);
+			}
+
+			if (skip.HasValue)
+			{
+				query = query.Skip(skip.Value);
+			}
+
+			if (top.HasValue)
+			{
+				query = query.Take(top.Value);
+			}
+
+			return query.ToList();
+		}
+		
+		/// <summary>
+		/// Gets the first entity based on the specified criteria.
+		/// </summary>
+		/// <param name="filter">The condition the entities must fulfil to be returned</param>
+		/// <param name="includeProperties">Any other navigation properties to include when returning the collection</param>
+		/// <param name="top">The number of records to limit the results to</param>
+		/// <param name="skip">The number of records to skip</param>
+		/// <returns>A collection of entities</returns>
+		public T GetFirstOrDefault(Expression<Func<T, bool>> filter = null,
+			string includeProperties = "",
+			int? top = null,
+			int? skip = null)
+		{
+			IQueryable<T> query = m_DbSet;
+
+			if (filter != null)
+			{
+				query = query.Where(filter);
+			}
+
+			foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+			{
+				query = query.Include(includeProperty);
+			}
+
+			if (skip.HasValue)
+			{
+				query = query.Skip(skip.Value);
+			}
+
+			if (top.HasValue)
+			{
+				query = query.Take(top.Value);
+			}
+
+			return query.FirstOrDefault();
+		}
+		
+		/// <summary>
+		/// Gets an entity by ID.
+		/// </summary>
+		/// <param name="id">The ID of the entity to retrieve</param>
+		/// <returns>The entity object if found, otherwise null</returns>
+		public T GetById(object id)
+		{
+			return m_DbSet.Find(id);
+		}
+
+		/// <summary>
+		/// Checks if any matching entries found after applying the filter.
+		/// </summary>
+		/// <param name="filter"></param>
+		/// <returns>True, if match found. Otherwise false.</returns>
+		public bool Any(Expression<Func<T, bool>> filter = null) 
+			=> filter == null ? m_DbSet.Any() : m_DbSet.Any(filter);
+		#endregion
+
+		#region Add & Update
+		/// <summary>
+		/// Adds an entity.
+		/// </summary>
+		/// <param name="entity">The entity to add</param>
+		public void Add(T entity)
+		{
+			m_DbSet.Add(entity);
+		}
+
+		/// <summary>
+		/// Updates an entity.
+		/// </summary>
+		/// <param name="entity">The entity to add</param>
+		public void Update(T entity)
+		{
+			m_DbSet.Attach(entity);
+			m_DbContext.Entry(entity).State = EntityState.Modified;
+		}
+
+		/// <summary>
+		/// Adds or Updates an entity.
+		/// </summary>
+		/// <param name="entity">The entity to add or update</param>
+		/// <param name="shouldAdd">To know if we should add or update</param>
 		public void AddOrUpdate(T entity, bool shouldAdd)
 		{
 			if (shouldAdd)
@@ -56,48 +160,26 @@ namespace SchoolWeb.API.DataAccessLayer
 		}
 		#endregion
 
-		#region Update
-		public void Update(T entity) => m_DbContext.Update(entity);
+		#region Delete
+		/// <summary>
+		/// Deletes an entity based on entity id.
+		/// </summary>
+		/// <param name="id">The entity id</param>
+		public void Delete(object id)
+		{
+			T getObjById = m_DbSet.Find(id);
+			m_DbSet.Remove(getObjById);
+		}
 
-		public void UpdateRange(IEnumerable<T> entities) => m_DbContext.UpdateRange(entities);
+		/// <summary>
+		/// Deletes an entity based on condition.
+		/// </summary>
+		/// <param name="filter">The condition the entities must fulfil to be deleted</param>
+		public void Delete(Expression<Func<T, bool>> filter = null)
+		{
+			m_DbSet.RemoveRange(m_DbSet.Where(filter));
+		}
 		#endregion
-
-		#region Remove
-		public void Remove(T entity) => m_DbContext.Remove(entity);
-
-		public void RemoveRange(IEnumerable<T> entities) => m_DbContext.RemoveRange(entities);
-		#endregion
-
-		#region Async
-		public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
-			=> await m_DbSet.FirstOrDefaultAsync(filter, cancellationToken);
-
-        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null,
-            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-            string includeProperties = "",
-            CancellationToken cancellationToken = default)
-        {
-			IQueryable<T> query = m_DbSet;
-			if (filter != null)
-				query = query.Where(filter);
-
-			foreach (var includeProperty in includeProperties.Split
-				(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-			{
-				query = query.Include(includeProperty);
-			}
-
-			if (orderBy != null)
-				return await orderBy(query).ToListAsync(cancellationToken);
-			else
-				return await query.ToListAsync(cancellationToken);
-        }
-
-		public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
-		   => await m_DbContext.AddAsync(entity, cancellationToken);
-
-		public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
-			=> await m_DbContext.AddRangeAsync(entities, cancellationToken);
 		#endregion
 	}
 }
