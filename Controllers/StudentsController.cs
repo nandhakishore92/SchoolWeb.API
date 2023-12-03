@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SchoolWeb.API.Dtos;
 using SchoolWeb.API.Providers;
 
 namespace SchoolWeb.API.Controllers
 {
-	public class StudentsController : ControllerBase
+	public class StudentsController : ControllerBase, IStudentsController
 	{
 		private readonly IStudentsService m_Service;
 		public StudentsController(IStudentsService service)
@@ -11,10 +12,15 @@ namespace SchoolWeb.API.Controllers
 			m_Service = service;
 		}
 
-		[HttpGet("{id}")]
-		public ActionResult<string> Student(int id)
+		#region Student Details
+		[HttpGet("{rteOnly}")]
+		public StudentDetailsListDto StudentDetails(bool rteOnly = false)
 		{
-			return m_Service.GetStudent(id);
+			if (rteOnly)
+				return m_Service.GetRegisteredStudentDetailsList(filter: student => student.IsActive && student.IsRte, rteOnly);
+			
+			return m_Service.GetRegisteredStudentDetailsList(filter: student => student.IsActive, rteOnly);
 		}
+		#endregion
 	}
 }

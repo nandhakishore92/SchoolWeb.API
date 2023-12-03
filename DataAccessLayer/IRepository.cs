@@ -11,7 +11,7 @@ namespace SchoolWeb.API.DataAccessLayer
 		#region Get & Any
 		IEnumerable<T> Get(Expression<Func<T, bool>> filter = null,
 			Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-			string includeProperties = "",
+			List<Expression<Func<T, object>>> includes = null,
 			int? top = null,
 			int? skip = null);
 		T GetFirstOrDefault(Expression<Func<T, bool>> filter = null,

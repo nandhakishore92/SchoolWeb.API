@@ -25,6 +25,7 @@ namespace SchoolWeb.API.DataAccessLayer
 		public DbSet<UserRolesMapping> UserRolesMappings { get; set; }
 		public DbSet<Student> Students { get; set; }
 		public DbSet<Class> Classes { get; set; }
+		public DbSet<Section> Sections { get; set; }
 		public DbSet<BusStop> BusStops { get; set; }
 		public DbSet<Models.Route> Routes { get; set; }
 		public DbSet<RouteBusStop> RouteBusStops { get; set; }

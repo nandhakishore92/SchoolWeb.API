@@ -1457,12 +1457,15 @@ namespace SchoolWeb.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("AdmissionNumber")
+                    b.Property<int?>("AdmissionNumber")
                         .HasColumnType("int");
 
                     b.Property<string>("BloodGroup")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<float>("BusFeesDiscountPercentage")
+                        .HasColumnType("real");
 
                     b.Property<string>("Caste")
                         .IsRequired()
@@ -1518,6 +1521,13 @@ namespace SchoolWeb.API.Migrations
                     b.Property<int>("LocalityId")
                         .HasColumnType("int");
 
+                    b.Property<int>("MiscellaneousFees")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MiscellaneousFeesComments")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("MotherName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1528,6 +1538,10 @@ namespace SchoolWeb.API.Migrations
 
                     b.Property<int>("PreviousYearFees")
                         .HasColumnType("int");
+
+                    b.Property<string>("PreviousYearFeesComments")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Religion")
                         .IsRequired()
@@ -1542,6 +1556,12 @@ namespace SchoolWeb.API.Migrations
                     b.Property<string>("StudentName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StudentPhotoId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("TcIssued")
+                        .HasColumnType("bit");
 
                     b.HasKey("StudentId");
 
@@ -1597,6 +1617,24 @@ namespace SchoolWeb.API.Migrations
                     b.ToTable("StudentArchives");
                 });
 
+            modelBuilder.Entity("SchoolWeb.API.Models.StudentPhoto", b =>
+                {
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("ImageData")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("ImageMimeType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("StudentId");
+
+                    b.ToTable("StudentPhotos");
+                });
+
             modelBuilder.Entity("SchoolWeb.API.Models.StudentRegistrationHistory", b =>
                 {
                     b.Property<int>("StudentRegistrationHistoryId")
@@ -1605,7 +1643,7 @@ namespace SchoolWeb.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentRegistrationHistoryId"));
 
-                    b.Property<int>("AdmissionNumber")
+                    b.Property<int?>("AdmissionNumber")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateOfJoining")
@@ -2501,6 +2539,17 @@ namespace SchoolWeb.API.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("SchoolWeb.API.Models.StudentPhoto", b =>
+                {
+                    b.HasOne("SchoolWeb.API.Models.Student", "Student")
+                        .WithOne("StudentPhoto")
+                        .HasForeignKey("SchoolWeb.API.Models.StudentPhoto", "StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("SchoolWeb.API.Models.StudentRegistrationHistory", b =>
                 {
                     b.HasOne("SchoolWeb.API.Models.AcademicYear", "JoiningAcademicYear")
@@ -2610,6 +2659,9 @@ namespace SchoolWeb.API.Migrations
                     b.Navigation("FeesHistories");
 
                     b.Navigation("FeesHistoryArchives");
+
+                    b.Navigation("StudentPhoto")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

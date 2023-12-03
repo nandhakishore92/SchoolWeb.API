@@ -29,13 +29,13 @@ namespace SchoolWeb.API.DataAccessLayer
 		/// </summary>
 		/// <param name="filter">The condition the entities must fulfil to be returned</param>
 		/// <param name="orderBy">The function used to order the entities</param>
-		/// <param name="includeProperties">Any other navigation properties to include when returning the collection</param>
+		/// <param name="includes">Any other navigation properties to include when returning the collection</param>
 		/// <param name="top">The number of records to limit the results to</param>
 		/// <param name="skip">The number of records to skip</param>
 		/// <returns>A collection of entities</returns>
 		public IEnumerable<T> Get(Expression<Func<T, bool>> filter = null,
 			Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-			string includeProperties = "",
+			List<Expression<Func<T, object>>> includes = null,
 			int? top = null,
 			int? skip = null)
 		{
@@ -46,9 +46,12 @@ namespace SchoolWeb.API.DataAccessLayer
 				query = query.Where(filter);
 			}
 
-			foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+			if (includes != null)
 			{
-				query = query.Include(includeProperty);
+				foreach (var includeProperty in includes)
+				{
+					query = query.Include(includeProperty);
+				}
 			}
 
 			if (orderBy != null)
