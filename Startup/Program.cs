@@ -1,9 +1,8 @@
-using Microsoft.EntityFrameworkCore;
+using NLog.Web;
 using SchoolWeb.API.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
-string connectionString = builder.Configuration.GetConnectionString("SchoolDbContext");
-builder.Services.RegisterApplicationServices(connectionString);
+builder.Services.RegisterApplicationServices(builder);
 
 var app = builder.Build();
 app.ConfigureMiddleware();

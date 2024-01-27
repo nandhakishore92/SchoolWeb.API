@@ -20,7 +20,6 @@ namespace SchoolWeb.API.Models
 		[Required]
 		public string StudentName { get; set; }
 		public int ClassId { get; set; }
-		[ForeignKey("Section")]
 		public int? SectionId { get; set; }
 		[Required]
 		public string FatherName { get; set; }

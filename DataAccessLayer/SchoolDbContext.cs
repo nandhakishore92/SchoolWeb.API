@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SchoolWeb.API.Models;
+﻿using SchoolWeb.API.Models;
 using SchoolWeb.API.Models.Expenses;
 using SchoolWeb.API.Models.Expenses.Building;
 using SchoolWeb.API.Models.Expenses.Inventory;
@@ -8,18 +7,20 @@ using SchoolWeb.API.Models.Expenses.Miscellaneous;
 using SchoolWeb.API.Models.Expenses.Salary;
 using SchoolWeb.API.Models.Expenses.Telecom;
 using SchoolWeb.API.Models.Expenses.VehicleExpense;
-using System.Data;
-using System.Numerics;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace SchoolWeb.API.DataAccessLayer
 {
-	public class SchoolDbContext : DbContext
+	public class SchoolDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
 	{
 		public SchoolDbContext(DbContextOptions<SchoolDbContext> options)
-		: base(options)
-		{ }
+			: base(options)
+		{
+		}
 
+		public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+		public DbSet<ApplicationRole> ApplicationRoles { get; set; }
 		public DbSet<User> Users { get; set; }
 		public DbSet<Role> Roles { get; set; }
 		public DbSet<UserRolesMapping> UserRolesMappings { get; set; }
