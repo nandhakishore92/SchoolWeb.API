@@ -1,29 +1,34 @@
 ﻿using SchoolWeb.API.Dtos.Account;
+using SchoolWeb.API.Utilities;
 
 namespace SchoolWeb.API.Services.Interfaces
 {
 	public interface IAccountService: IBaseService
 	{
-		#region User Details
-		Task<(int, string)> Register(UserDto userDto);
+		#region Registration and Authentication
+		Task<CustomResponse> Register(UserDto userDto);
 
-		Task<(int, string)> Login(string userName, string password);
+		Task<CustomResponse> Login(UserLiteDto userLiteDto);
 
-		Task<(int, string)> Logout();
-
-		Task<(int, string)> UpdateCurrentUser(UserDto userDto);
-
-		Task<(int, string)> UpdateSpecificUser(UserDto userDto);
-
-		Task<(int, string)> DeleteSpecificUser(string userName);
-
-		Task<(int, string)> ResetSpecificUserPassword(string userName, string password);
-
-		Task<(int, string)> ResetCurrentUserPassword(string password);
+		Task<CustomResponse> Logout();
 		#endregion
 
-		#region Role Details
-		Task<(int, string)> CreateRole(RoleDto roleDto);
+		#region User Management
+		Task<List<UserDto>> GetUsers();
+
+		Task<UserDto> GetUser(string userName);
+
+		Task<CustomResponse> UpdateUser(string userName, UpdateUserDto userDto);
+
+		Task<CustomResponse> DeleteSpecificUser(UserSuperLiteDto userSuperLiteDto);
+
+		Task<CustomResponse> ResetSpecificUserPassword(UserLiteDto userLiteDto);
+
+		Task<CustomResponse> ResetCurrentUserPassword(PasswordDto passwordDto);
+		#endregion
+
+		#region Role Management
+		Task<CustomResponse> CreateRole(RoleDto roleDto);
 		#endregion
 	}
 }

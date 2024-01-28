@@ -1,17 +1,22 @@
-﻿namespace SchoolWeb.API.Dtos.Account
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SchoolWeb.API.Dtos.Account
 {
-	public class UserDto
+	public class UserDto : UserLiteDto
 	{
+		[Required]
 		public string FullName { get; set; }
+		[Required]
 		public string Gender { get; set; }
+		[Required]
+		[EmailAddress]
 		public string Email { get; set; }
 		public string PhoneNumber { get; set; }
-		public string UserName { get; set; }
+		[Required]
 		public List<string> AssignedRoles { get; set; }
-		public string Password { get; set; }
 		public string CreatedOrUpdatedBy { get; set; }
 
-		public UserDto()
+		public UserDto(): base()
 		{ }
 	}
 }

@@ -11,7 +11,7 @@ namespace SchoolWeb.API.Controllers.Implementations
 	[ApiController]
 	[Route("/api/[controller]")]
 	[Authorize]
-	public class AccountController : ControllerBase, IAccountController
+	public class AccountController : BaseController, IAccountController
 	{
 		private readonly IAccountService _service;
 		public AccountController(IAccountService service)
@@ -19,51 +19,30 @@ namespace SchoolWeb.API.Controllers.Implementations
 			_service = service;
 		}
 
-		#region User Details
+		#region Registration and Authentication
 		[HttpPost]
 		[Route("register")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<IActionResult> Register(UserDto userDto)
+		public async Task<IActionResult> Register([FromBody] UserDto userDto)
 		{
-			try
-			{
-				if (!ModelState.IsValid)
-					return BadRequest("Invalid inputs");
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
 
-				var (status, message) = await _service.Register(userDto);
-				if (status == 0)
-					return BadRequest(message);
-
-				return CreatedAtAction(nameof(Register), new { id = userDto.UserName }, null);
-			}
-			catch (Exception ex)
-			{
-				//_logger.LogError(ex.Message);
-				return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-			}
+			CustomResponse response = await _service.Register(userDto);
+			string createdLocation = CreateUrl(nameof(GetUser), nameof(AccountController), new { id = userDto.UserName });
+			return response.ToActionResult(createdLocation);
 		}
 
 		[HttpPost]
 		[Route("login")]
 		[AllowAnonymous]
-		public async Task<IActionResult> Login(string userName, string password)
+		public async Task<IActionResult> Login([FromBody] UserLiteDto userLiteDto)
 		{
-			try
-			{
-				if (!ModelState.IsValid)
-					return BadRequest("Invalid payload");
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
 
-				var (status, message) = await _service.Login(userName, password);
-				if (status == 0)
-					return BadRequest(message);
-
-				return Ok(message);
-			}
-			catch (Exception ex)
-			{
-				//_logger.LogError(ex.Message);
-				return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-			}
+			CustomResponse response = await _service.Login(userLiteDto);
+			return response.ToActionResult();
 		}
 
 		[HttpPost]
@@ -71,103 +50,90 @@ namespace SchoolWeb.API.Controllers.Implementations
 		[Authorize]
 		public async Task<IActionResult> Logout()
 		{
-			throw new NotImplementedException();
-		}
-
-		[HttpPut]
-		[Route("updatecurrentuser")]
-		[Authorize]
-		public async Task<IActionResult> UpdateCurrentUser(UserDto userDto)
-		{
-			try
-			{
-				if (!ModelState.IsValid)
-					return BadRequest("Invalid payload");
-
-				var (status, message) = await _service.UpdateCurrentUser(userDto);
-				if (status == 0)
-					return BadRequest(message);
-
-				return Ok(message);
-			}
-			catch (Exception ex)
-			{
-				//_logger.LogError(ex.Message);
-				return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-			}
-		}
-
-		[HttpPut]
-		[Route("updatespecificuser")]
-		[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<ActionResult> UpdateSpecificUser(UserDto userDto)
-		{
-			throw new NotImplementedException();
-		}
-
-		[HttpDelete]
-		[Route("deletespecificuser")]
-		[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<IActionResult> DeleteSpecificUser(string userName)
-		{
-			throw new NotImplementedException();
-		}
-
-		[HttpPut]
-		[Route("resetcurrentuserpassword")]
-		[Authorize]
-		public async Task<IActionResult> ResetCurrentUserPassword(string password)
-		{
-			throw new NotImplementedException();
-		}
-
-		[HttpPut]
-		[Route("resetspecificuserpassword")]
-		[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<IActionResult> ResetSpecificUserPassword(string userName, string password)
-		{
-			try
-			{
-				if (!ModelState.IsValid)
-					return BadRequest("Invalid payload");
-
-				var (status, message) = await _service.ResetSpecificUserPassword(userName, password);
-				if (status == 0)
-					return BadRequest(message);
-
-				return Ok(message);
-			}
-			catch (Exception ex)
-			{
-				//_logger.LogError(ex.Message);
-				return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-			}
+			CustomResponse response = await _service.Logout();
+			return response.ToActionResult();
 		}
 		#endregion
 
-		#region Role Details
-		[HttpPost]
-		[Route("createrole")]
-		[AllowAnonymous]
-		//[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<IActionResult> CreateRole(RoleDto roleDto)
+		#region User Management
+		[HttpGet]
+		[Route("get-users")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		public Task<IActionResult> GetUsers()
 		{
-			try
-			{
-				if (!ModelState.IsValid)
-					return BadRequest("Invalid payload");
+			throw new NotImplementedException();
+		}
 
-				var (status, message) = await _service.CreateRole(roleDto);
-				if (status == 0)
-					return BadRequest(message);
+		[HttpGet]
+		[Route("get-user/{userName}")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		public Task<IActionResult> GetUser(string userName)
+		{
+			throw new NotImplementedException();
+		}
 
-				return CreatedAtAction(nameof(CreateRole), roleDto);
-			}
-			catch (Exception ex)
-			{
-				//_logger.LogError(ex.Message);
-				return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-			}
+		[HttpPut]
+		[Route("update-current-user")]
+		[Authorize]
+		public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserDto userDto)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			string currentUserName = HttpContext.User.Identity.Name;
+			CustomResponse response = await _service.UpdateUser(currentUserName, userDto);
+			return response.ToActionResult();
+		}
+
+		[HttpPut]
+		[Route("update-specific-user")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		public async Task<IActionResult> UpdateSpecificUser([FromBody] UpdateSpecificUserDto updateSpecificUserDto)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			CustomResponse response = await _service.UpdateUser(updateSpecificUserDto.UserSuperLiteInfo.UserName, updateSpecificUserDto.UserDto);
+			return response.ToActionResult();
+		}
+
+		[HttpDelete]
+		[Route("delete-specific-user")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		public async Task<IActionResult> DeleteSpecificUser([FromBody] UserSuperLiteDto userSuperLiteDto)
+		{
+			throw new NotImplementedException();
+		}
+
+		[HttpPut]
+		[Route("reset-current-user-password")]
+		[Authorize]
+		public async Task<IActionResult> ResetCurrentUserPassword([FromBody] PasswordDto passwordDto)
+		{
+			throw new NotImplementedException();
+		}
+
+		[HttpPut]
+		[Route("reset-specific-user-password")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		public async Task<IActionResult> ResetSpecificUserPassword([FromBody] UserLiteDto userLiteDto)
+		{
+			throw new NotImplementedException();
+		}
+		#endregion
+
+		#region Role Management
+		[HttpPost]
+		[Route("create-role")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		public async Task<IActionResult> CreateRole([FromBody] RoleDto roleDto)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			CustomResponse response = await _service.CreateRole(roleDto);
+			//string createdLocation = CreateUrl(nameof(GetUser), nameof(AccountController), new { id = userDto.UserName });
+			return response.ToActionResult();
 		}
 		#endregion
 	}

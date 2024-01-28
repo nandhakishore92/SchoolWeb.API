@@ -3,9 +3,10 @@
 	public class CustomResponse
 	{
 		public int StatusCode { get; }
-		public string Message { get; }
+		public object Message { get; }
 		public string Details { get; }
-		public CustomResponse(int statusCode, string message, string details = "")
+
+		public CustomResponse(int statusCode, object message, string details = "")
 		{
 			StatusCode = statusCode;
 			Message = message;
