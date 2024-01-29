@@ -17,20 +17,5 @@ namespace SchoolWeb.API.Models
 		/// </summary>
 		public ApplicationUser()
 		{ }
-
-		/// <summary>
-		/// For registering a new user
-		/// </summary>
-		/// <param name="userDto"></param>
-		public ApplicationUser(UserDto userDto)
-		{
-			FullName = userDto.FullName;
-			Gender = userDto.Gender;
-			Email = userDto.Email;
-			PhoneNumber = userDto.PhoneNumber;
-			UserName = userDto.UserName;
-			CreatedDate = DateTime.Now;
-			CreatedBy = userDto.CreatedOrUpdatedBy;
-		}
 	}
 }

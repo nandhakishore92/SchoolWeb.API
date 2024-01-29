@@ -28,7 +28,8 @@ namespace SchoolWeb.API.Controllers.Implementations
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 
-			CustomResponse response = await _service.Register(userDto);
+			string currentUserName = HttpContext.User.Identity.Name;
+			CustomResponse response = await _service.Register(currentUserName, userDto);
 			string createdLocation = CreateUrl(nameof(GetUser), nameof(AccountController), new { id = userDto.UserName });
 			return response.ToActionResult(createdLocation);
 		}
@@ -59,41 +60,47 @@ namespace SchoolWeb.API.Controllers.Implementations
 		[HttpGet]
 		[Route("get-users")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
-		public Task<IActionResult> GetUsers()
+		public async Task<IActionResult> GetUsers()
 		{
-			throw new NotImplementedException();
+			var users = await _service.GetUsers();
+			return Ok(users);
 		}
 
 		[HttpGet]
 		[Route("get-user/{userName}")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
-		public Task<IActionResult> GetUser(string userName)
+		public async Task<IActionResult> GetUser(string userName)
 		{
-			throw new NotImplementedException();
+			var user = await _service.GetUser(userName);
+			if(user == null)
+				return NotFound(userName);
+
+			return Ok(user);
 		}
 
 		[HttpPut]
 		[Route("update-current-user")]
 		[Authorize]
-		public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserDto userDto)
+		public async Task<IActionResult> UpdateCurrentUser([FromBody] UserWithoutUsernameAndPasswordDto userDto)
 		{
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 
 			string currentUserName = HttpContext.User.Identity.Name;
-			CustomResponse response = await _service.UpdateUser(currentUserName, userDto);
+			CustomResponse response = await _service.UpdateUser(currentUserName, currentUserName, userDto);
 			return response.ToActionResult();
 		}
 
 		[HttpPut]
 		[Route("update-specific-user")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<IActionResult> UpdateSpecificUser([FromBody] UpdateSpecificUserDto updateSpecificUserDto)
+		public async Task<IActionResult> UpdateSpecificUser([FromBody] UserWithoutPasswordDto updateSpecificUserDto)
 		{
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 
-			CustomResponse response = await _service.UpdateUser(updateSpecificUserDto.UserSuperLiteInfo.UserName, updateSpecificUserDto.UserDto);
+			string currentUserName = HttpContext.User.Identity.Name;
+			CustomResponse response = await _service.UpdateUser(currentUserName, updateSpecificUserDto.UserName, updateSpecificUserDto);
 			return response.ToActionResult();
 		}
 
@@ -102,23 +109,37 @@ namespace SchoolWeb.API.Controllers.Implementations
 		[Authorize(Roles = RolesConstant.Correspondent)]
 		public async Task<IActionResult> DeleteSpecificUser([FromBody] UserSuperLiteDto userSuperLiteDto)
 		{
-			throw new NotImplementedException();
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			CustomResponse response = await _service.DeleteSpecificUser(userSuperLiteDto.UserName);
+			return response.ToActionResult();
 		}
 
 		[HttpPut]
 		[Route("reset-current-user-password")]
 		[Authorize]
-		public async Task<IActionResult> ResetCurrentUserPassword([FromBody] PasswordDto passwordDto)
+		public async Task<IActionResult> ResetCurrentUserPassword([FromBody] ResetPasswordDto passwordDto)
 		{
-			throw new NotImplementedException();
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			string currentUserName = HttpContext.User.Identity.Name;
+			var response = await _service.ResetCurrentUserPassword(currentUserName, passwordDto);
+			return response.ToActionResult();
 		}
 
 		[HttpPut]
 		[Route("reset-specific-user-password")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<IActionResult> ResetSpecificUserPassword([FromBody] UserLiteDto userLiteDto)
+		public async Task<IActionResult> ResetSpecificUserPassword([FromBody] ResetPasswordByCorrespondentDto passwordDto)
 		{
-			throw new NotImplementedException();
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			string currentUserName = HttpContext.User.Identity.Name;
+			var response = await _service.ResetSpecificUserPassword(currentUserName, passwordDto);
+			return response.ToActionResult();
 		}
 		#endregion
 
@@ -132,7 +153,6 @@ namespace SchoolWeb.API.Controllers.Implementations
 				return BadRequest(ModelState);
 
 			CustomResponse response = await _service.CreateRole(roleDto);
-			//string createdLocation = CreateUrl(nameof(GetUser), nameof(AccountController), new { id = userDto.UserName });
 			return response.ToActionResult();
 		}
 		#endregion

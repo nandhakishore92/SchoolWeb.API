@@ -14,7 +14,6 @@ namespace SchoolWeb.API.Dtos.Account
 		public string PhoneNumber { get; set; }
 		[Required]
 		public List<string> AssignedRoles { get; set; }
-		public string CreatedOrUpdatedBy { get; set; }
 
 		public UserDto(): base()
 		{ }

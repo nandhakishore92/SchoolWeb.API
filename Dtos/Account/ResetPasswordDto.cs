@@ -2,13 +2,13 @@
 
 namespace SchoolWeb.API.Dtos.Account
 {
-	public class PasswordDto
+	public class ResetPasswordDto: ResetPasswordBaseDto
 	{
 		[Required]
 		[DataType(DataType.Password)]
-		public string Password { get; set; }
+		public string CurrentPassword { get; set; }
 
-		public PasswordDto()
+		public ResetPasswordDto(): base()
 		{ }
 	}
 }

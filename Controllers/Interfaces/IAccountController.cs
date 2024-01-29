@@ -38,12 +38,12 @@ namespace SchoolWeb.API.Controllers.Interfaces
 		[HttpPut]
 		[Route("update-current-user")]
 		[Authorize]
-		Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserDto userDto);
+		Task<IActionResult> UpdateCurrentUser([FromBody] UserWithoutUsernameAndPasswordDto userDto);
 
 		[HttpPut]
 		[Route("update-specific-user")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
-		Task<IActionResult> UpdateSpecificUser([FromBody] UpdateSpecificUserDto updateSpecificUserDto);
+		Task<IActionResult> UpdateSpecificUser([FromBody] UserWithoutPasswordDto updateSpecificUserDto);
 
 		[HttpDelete]
 		[Route("delete-specific-user")]
@@ -53,12 +53,12 @@ namespace SchoolWeb.API.Controllers.Interfaces
 		[HttpPut]
 		[Route("reset-specific-user-password")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
-		Task<IActionResult> ResetSpecificUserPassword([FromBody] UserLiteDto userLiteDto);
+		Task<IActionResult> ResetSpecificUserPassword([FromBody] ResetPasswordByCorrespondentDto userLiteDto);
 
 		[HttpPut]
 		[Route("reset-current-user-password")]
 		[Authorize]
-		Task<IActionResult> ResetCurrentUserPassword([FromBody] PasswordDto passwordDto);
+		Task<IActionResult> ResetCurrentUserPassword([FromBody] ResetPasswordDto passwordDto);
 		#endregion
 
 		#region Role Management

@@ -6,7 +6,7 @@ namespace SchoolWeb.API.Services.Interfaces
 	public interface IAccountService: IBaseService
 	{
 		#region Registration and Authentication
-		Task<CustomResponse> Register(UserDto userDto);
+		Task<CustomResponse> Register(string currentUserName, UserDto userDto);
 
 		Task<CustomResponse> Login(UserLiteDto userLiteDto);
 
@@ -14,17 +14,17 @@ namespace SchoolWeb.API.Services.Interfaces
 		#endregion
 
 		#region User Management
-		Task<List<UserDto>> GetUsers();
+		Task<List<UserWithoutPasswordDto>> GetUsers();
 
-		Task<UserDto> GetUser(string userName);
+		Task<UserWithoutPasswordDto> GetUser(string userName);
 
-		Task<CustomResponse> UpdateUser(string userName, UpdateUserDto userDto);
+		Task<CustomResponse> UpdateUser(string currentUserName, string userName, UserWithoutUsernameAndPasswordDto userDto);
 
-		Task<CustomResponse> DeleteSpecificUser(UserSuperLiteDto userSuperLiteDto);
+		Task<CustomResponse> DeleteSpecificUser(string userName);
 
-		Task<CustomResponse> ResetSpecificUserPassword(UserLiteDto userLiteDto);
+		Task<CustomResponse> ResetSpecificUserPassword(string currentUserName, ResetPasswordByCorrespondentDto passwordDto);
 
-		Task<CustomResponse> ResetCurrentUserPassword(PasswordDto passwordDto);
+		Task<CustomResponse> ResetCurrentUserPassword(string userName, ResetPasswordDto passwordDto);
 		#endregion
 
 		#region Role Management
