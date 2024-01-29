@@ -46,7 +46,7 @@ namespace SchoolWeb.API.Startup
 					options.User.RequireUniqueEmail = true;
 					options.Password.RequireDigit = true;
 					options.Password.RequiredLength = 8;
-					options.Password.RequireNonAlphanumeric = false;
+					options.Password.RequireNonAlphanumeric = true;
 					options.Password.RequireUppercase = true;
 				})
 				.AddRoles<ApplicationRole>()

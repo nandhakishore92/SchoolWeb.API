@@ -1,4 +1,3 @@
-using NLog.Web;
 using SchoolWeb.API.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
