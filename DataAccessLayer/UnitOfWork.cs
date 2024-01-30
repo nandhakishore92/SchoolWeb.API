@@ -564,14 +564,8 @@ namespace SchoolWeb.API.DataAccessLayer
             return academicYear.AcademicYearId;
 		}
 
-		public void Commit()
-			=> m_DbContext.SaveChanges();
-
         public async Task CommitAsync()
 			=> await m_DbContext.SaveChangesAsync();
-
-		public void Rollback()
-			=> m_DbContext.Dispose();
 
         public async Task RollbackAsync()
 			=> await m_DbContext.DisposeAsync();
