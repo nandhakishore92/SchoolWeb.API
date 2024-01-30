@@ -2,6 +2,11 @@
 
 SchoolWeb.API is a .NET 6.0 Web API application that provides a platform for managing school-related data. It follows the principles of REST and uses SQL Server as its data store.
 
+## ToDo
+- ** This has to be moved to a secret store like Azure Key Vaults.
+- ** Refresh JWT Token so as the user does not have to authenticate after every time the JWT token expires(30 minutes currently).
+- ** Blacklist JWT Token so as the token becomes invalid as soon as the user logs off.
+
 ## Features
 
 - **Student Management**: The API provides endpoints for creating, retrieving, updating, and deleting student records.
