@@ -61,8 +61,6 @@ namespace SchoolWeb.API.DataAccessLayer
 		IRepository<OtherIncome> OtherIncomeRepository { get; }
 		IRepository<StudentRegistrationHistory> StudentRegistrationHistoryRepository { get; }
 		IRepository<ExceptionLog> LogRepository { get; }
-		void Commit();
-		void Rollback();
 		Task CommitAsync();
 		Task RollbackAsync();
 	}
