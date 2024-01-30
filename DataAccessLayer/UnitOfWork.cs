@@ -63,9 +63,7 @@ namespace SchoolWeb.API.DataAccessLayer
         private IRepository<StudentRegistrationHistory> m_StudentRegistrationHistoryRepository;
         private IRepository<ExceptionLog> m_LogRepository = null;
 
-        public int CurrentAcademicYearId => AcademicYearRepository.GetFirstOrDefault(filter: ay => ay.IsCurrentAcademicYear)?.AcademicYearId ?? -1;
-
-        public UnitOfWork(SchoolDbContext context)
+		public UnitOfWork(SchoolDbContext context)
         {
             m_DbContext = context;
         }
@@ -559,6 +557,12 @@ namespace SchoolWeb.API.DataAccessLayer
                 return m_LogRepository;
             }
         }
+
+		public async Task<int> GetCurrentAcademicYearIdAsync()
+		{
+			AcademicYear academicYear = await AcademicYearRepository.GetFirstAsync(filter: ay => ay.IsCurrentAcademicYear);
+            return academicYear.AcademicYearId;
+		}
 
 		public void Commit()
 			=> m_DbContext.SaveChanges();

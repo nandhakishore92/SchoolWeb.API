@@ -17,10 +17,10 @@ namespace SchoolWeb.API.Services.Implementations
         { }
 
         #region Student Details
-        public StudentDetailsListDto GetRegisteredStudentDetailsList(Expression<Func<Student, bool>> filter, bool rteOnly)
+        public async Task<StudentDetailsListDto> GetRegisteredStudentDetailsList(Expression<Func<Student, bool>> filter, bool rteOnly)
         {
-            List<StudentDetailsDto> students = UnitOfWork.StudentRepository
-                    .Get(filter: filter,
+            List<StudentDetailsDto> students = (await UnitOfWork.StudentRepository
+                    .GetAsync(filter: filter,
                         orderBy: stu => stu.OrderBy(s => s.ClassId).ThenBy(s => s.SectionId),
                         includes: new List<Expression<Func<Student, object>>>
                         {
@@ -29,8 +29,8 @@ namespace SchoolWeb.API.Services.Implementations
                             stu => stu.Locality,
                             stu => stu.FeesHistories,
                             stu => stu.RouteBusStop
-                        })
-                    .Select(student => new StudentDetailsDto(student))
+                        }))
+					.Select(student => new StudentDetailsDto(student))
                     .ToList();
 
             string title = rteOnly ? "Registered RTE Students Details" : "Registered Students Details";

@@ -18,15 +18,15 @@ namespace SchoolWeb.API.Controllers.Implementations
         }
 
 		#region Student Details
-		[HttpGet("{rteOnly}")]
-        //[Route("studentdetails")]
+		[HttpGet]
+        [Route("student-details/{rteOnly}")]
         [Authorize]
-        public StudentDetailsListDto StudentDetails(bool rteOnly = false)
+        public async Task<StudentDetailsListDto> StudentDetails(bool rteOnly = false)
         {
             if (rteOnly)
-                return m_Service.GetRegisteredStudentDetailsList(filter: student => student.IsActive && student.IsRte, rteOnly);
+                return await m_Service.GetRegisteredStudentDetailsList(filter: student => student.IsActive && student.IsRte, rteOnly);
 
-            return m_Service.GetRegisteredStudentDetailsList(filter: student => student.IsActive, rteOnly);
+            return await m_Service.GetRegisteredStudentDetailsList(filter: student => student.IsActive, rteOnly);
         }
         #endregion
     }

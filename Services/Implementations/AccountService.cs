@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using SchoolWeb.API.Controllers.Implementations;
 using SchoolWeb.API.Dtos.Account;
 using SchoolWeb.API.Models;
 using SchoolWeb.API.Services.Interfaces;
@@ -13,12 +14,19 @@ namespace SchoolWeb.API.Services.Implementations
 		private readonly RoleManager<ApplicationRole> _roleManager;
 		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly ITokenService _tokenService;
-		public AccountService(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, SignInManager<ApplicationUser> signInManager, ITokenService tokenService)
+		private readonly ILogger<AccountService> _logger;
+
+		public AccountService(UserManager<ApplicationUser> userManager, 
+			RoleManager<ApplicationRole> roleManager, 
+			SignInManager<ApplicationUser> signInManager, 
+			ITokenService tokenService,
+			ILogger<AccountService> logger)
 		{
 			_userManager = userManager;
 			_roleManager = roleManager;
 			_signInManager = signInManager;
 			_tokenService = tokenService;
+			_logger = logger;
 		}
 
 		#region Registration and Authentication
@@ -26,7 +34,10 @@ namespace SchoolWeb.API.Services.Implementations
 		{
 			var userExists = await _userManager.FindByNameAsync(userDto.UserName);
 			if (userExists != null)
+			{
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to register an user '{userDto.UserName}' who already exists.");
 				return new CustomResponse(409, $"User - {userDto.UserName} already exists");
+			}
 
 			ApplicationUser user = new ApplicationUser()
 			{
@@ -47,6 +58,7 @@ namespace SchoolWeb.API.Services.Implementations
 			if (response.IsBadResponse())
 				return response;
 
+			_logger.LogInformationWithPrefix($"'{currentUserName}' has successfully registered a new user '{userDto.UserName}'.");
 			return new CustomResponse(201, $"User - {userDto.UserName} created successfully!");
 		}
 
@@ -54,19 +66,27 @@ namespace SchoolWeb.API.Services.Implementations
 		{
 			var user = await _userManager.FindByNameAsync(userLiteDto.UserName);
 			if (user == null)
+			{
+				_logger.LogCriticalWithPrefix($"Invalid login attempt for username '{userLiteDto.UserName}'. No user found!");
 				return new CustomResponse(401, "Invalid credentials!");
+			}
 
 			if (!await _userManager.CheckPasswordAsync(user, userLiteDto.Password))
+			{
+				_logger.LogCriticalWithPrefix($"Invalid login attempt for username '{userLiteDto.UserName}'.");
 				return new CustomResponse(401, "Invalid credentials!");
+			}
 
 			var userRoles = await _userManager.GetRolesAsync(user);
 			string token = _tokenService.CreateToken(user, userRoles);
+			_logger.LogInformationWithPrefix($"User '{userLiteDto.UserName}' logged in.");
 			return new CustomResponse(200, new { Token = token });
 		}
 
-		public async Task<CustomResponse> Logout()
+		public async Task<CustomResponse> Logout(string currentUserName)
 		{
 			await _signInManager.SignOutAsync();
+			_logger.LogInformationWithPrefix($"User '{currentUserName}' logged out.");
 			return new CustomResponse(200, "Logged out successfully!");
 		}
 		#endregion

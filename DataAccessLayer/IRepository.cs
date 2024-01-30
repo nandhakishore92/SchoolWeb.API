@@ -7,30 +7,37 @@ namespace SchoolWeb.API.DataAccessLayer
 	/// </summary>
 	/// <typeparam name="T">The Type of Entity to operate on</typeparam>
 	public interface IRepository<T> where T : class
-    {
+	{
 		#region Get & Any
-		IEnumerable<T> Get(Expression<Func<T, bool>> filter = null,
-			Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-			List<Expression<Func<T, object>>> includes = null,
-			int? top = null,
-			int? skip = null);
-		T GetFirstOrDefault(Expression<Func<T, bool>> filter = null,
-			string includeProperties = "",
-			int? top = null,
-			int? skip = null);
-		T GetById(object id);
-		bool Any(Expression<Func<T, bool>> filter = null);
+		Task<IEnumerable<T>> GetAsync(Expression<Func<T, bool>> filter = null,
+									  Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+									  List<Expression<Func<T, object>>> includes = null,
+									  int? top = null,
+									  int? skip = null);
+		Task<T> GetFirstAsync(Expression<Func<T, bool>> filter = null,
+									   List<Expression<Func<T, object>>> includes = null,
+									   int? top = null,
+									   int? skip = null);
+
+		Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter = null,
+									   List<Expression<Func<T, object>>> includes = null,
+									   int? top = null,
+									   int? skip = null);
+
+		Task<T> GetByIdAsync(object id);
+
+		Task<bool> AnyAsync(Expression<Func<T, bool>> filter = null);
 		#endregion
 
 		#region Add & Update
-		void Add(T entity);
-		void Update(T entity);
-		void AddOrUpdate(T entity, bool shouldAdd);
+		Task AddAsync(T entity);
+		Task UpdateAsync(T entity);
+		Task AddOrUpdateAsync(T entity, bool shouldAdd);
 		#endregion
 
 		#region Delete
-		void Delete(Object id);
-		void Delete(Expression<Func<T, bool>> filter);
+		Task DeleteAsync(object id);
+		Task DeleteAsync(Expression<Func<T, bool>> filter);
 		#endregion
 	}
 }

@@ -10,7 +10,7 @@ namespace SchoolWeb.API.Services.Interfaces
 
 		Task<CustomResponse> Login(UserLiteDto userLiteDto);
 
-		Task<CustomResponse> Logout();
+		Task<CustomResponse> Logout(string currentUserName);
 		#endregion
 
 		#region User Management

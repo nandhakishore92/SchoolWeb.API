@@ -22,16 +22,16 @@ namespace SchoolWeb.API.Startup
 				await next(context);
 				if (context.Response.StatusCode == StatusCodes.Status401Unauthorized)
 				{
-					_logger.LogWarning("Unauthorized request");
+					_logger.LogWarningWithPrefix("Unauthorized request");
 				}
 				else if (context.Response.StatusCode == StatusCodes.Status403Forbidden)
 				{
-					_logger.LogWarning("Unauthenticated request");
+					_logger.LogWarningWithPrefix("Unauthenticated request");
 				}
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, ex.Message);
+				_logger.LogErrorWithPrefix(ex, ex.Message);
 				await HandleExceptionAsync(context, ex);
 			}
 		}

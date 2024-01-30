@@ -3,11 +3,11 @@ using System.Linq.Expressions;
 
 namespace SchoolWeb.API.DataAccessLayer
 {
-    public class Repository<T> : IRepository<T> where T : class
-    {
+	public class Repository<T> : IRepository<T> where T : class
+	{
 		#region Readonlys
 		private readonly SchoolDbContext m_DbContext;
-        private readonly DbSet<T> m_DbSet;
+		private readonly DbSet<T> m_DbSet;
 		#endregion
 
 		#region Constructor
@@ -16,10 +16,10 @@ namespace SchoolWeb.API.DataAccessLayer
 		/// </summary>
 		/// <param name="context">The Database Context</param>
 		public Repository(SchoolDbContext context)
-        {
-            m_DbContext = context;
-            m_DbSet = context.Set<T>();
-        }
+		{
+			m_DbContext = context;
+			m_DbSet = context.Set<T>();
+		}
 		#endregion
 
 		#region Methods
@@ -33,45 +33,34 @@ namespace SchoolWeb.API.DataAccessLayer
 		/// <param name="top">The number of records to limit the results to</param>
 		/// <param name="skip">The number of records to skip</param>
 		/// <returns>A collection of entities</returns>
-		public IEnumerable<T> Get(Expression<Func<T, bool>> filter = null,
-			Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-			List<Expression<Func<T, object>>> includes = null,
-			int? top = null,
-			int? skip = null)
+		public async Task<IEnumerable<T>> GetAsync(Expression<Func<T, bool>> filter = null,
+												  Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+												  List<Expression<Func<T, object>>> includes = null,
+												  int? top = null,
+												  int? skip = null)
 		{
 			IQueryable<T> query = m_DbSet;
-
 			if (filter != null)
-			{
 				query = query.Where(filter);
-			}
 
 			if (includes != null)
 			{
 				foreach (var includeProperty in includes)
-				{
 					query = query.Include(includeProperty);
-				}
 			}
 
 			if (orderBy != null)
-			{
 				query = orderBy(query);
-			}
 
 			if (skip.HasValue)
-			{
 				query = query.Skip(skip.Value);
-			}
 
 			if (top.HasValue)
-			{
 				query = query.Take(top.Value);
-			}
 
-			return query.ToList();
+			return await query.ToListAsync();
 		}
-		
+
 		/// <summary>
 		/// Gets the first entity based on the specified criteria.
 		/// </summary>
@@ -79,45 +68,71 @@ namespace SchoolWeb.API.DataAccessLayer
 		/// <param name="includeProperties">Any other navigation properties to include when returning the collection</param>
 		/// <param name="top">The number of records to limit the results to</param>
 		/// <param name="skip">The number of records to skip</param>
-		/// <returns>A collection of entities</returns>
-		public T GetFirstOrDefault(Expression<Func<T, bool>> filter = null,
-			string includeProperties = "",
-			int? top = null,
-			int? skip = null)
+		/// <returns>Entity</returns>
+		public async Task<T> GetFirstAsync(Expression<Func<T, bool>> filter = null,
+													List<Expression<Func<T, object>>> includes = null,
+													int? top = null,
+													int? skip = null)
 		{
 			IQueryable<T> query = m_DbSet;
-
 			if (filter != null)
-			{
 				query = query.Where(filter);
-			}
 
-			foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+			if (includes != null)
 			{
-				query = query.Include(includeProperty);
+				foreach (var includeProperty in includes)
+					query = query.Include(includeProperty);
 			}
 
 			if (skip.HasValue)
-			{
 				query = query.Skip(skip.Value);
-			}
 
 			if (top.HasValue)
-			{
 				query = query.Take(top.Value);
+
+			return await query.FirstAsync();
+		}
+
+		/// <summary>
+		/// Gets the first entity based on the specified criteria. If no entity is found, returns null.
+		/// </summary>
+		/// <param name="filter">The condition the entities must fulfil to be returned</param>
+		/// <param name="includeProperties">Any other navigation properties to include when returning the collection</param>
+		/// <param name="top">The number of records to limit the results to</param>
+		/// <param name="skip">The number of records to skip</param>
+		/// <returns>Entity or null</returns>
+		public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter = null,
+													List<Expression<Func<T, object>>> includes = null,
+													int? top = null,
+													int? skip = null)
+		{
+			IQueryable<T> query = m_DbSet;
+			if (filter != null)
+				query = query.Where(filter);
+
+			if (includes != null)
+			{
+				foreach (var includeProperty in includes)
+					query = query.Include(includeProperty);
 			}
 
-			return query.FirstOrDefault();
+			if (skip.HasValue)
+				query = query.Skip(skip.Value);
+
+			if (top.HasValue)
+				query = query.Take(top.Value);
+
+			return await query.FirstOrDefaultAsync();
 		}
-		
+
 		/// <summary>
 		/// Gets an entity by ID.
 		/// </summary>
 		/// <param name="id">The ID of the entity to retrieve</param>
 		/// <returns>The entity object if found, otherwise null</returns>
-		public T GetById(object id)
+		public async Task<T> GetByIdAsync(object id)
 		{
-			return m_DbSet.Find(id);
+			return await m_DbSet.FindAsync(id);
 		}
 
 		/// <summary>
@@ -125,8 +140,8 @@ namespace SchoolWeb.API.DataAccessLayer
 		/// </summary>
 		/// <param name="filter"></param>
 		/// <returns>True, if match found. Otherwise false.</returns>
-		public bool Any(Expression<Func<T, bool>> filter = null) 
-			=> filter == null ? m_DbSet.Any() : m_DbSet.Any(filter);
+		public async Task<bool> AnyAsync(Expression<Func<T, bool>> filter = null)
+			=> filter == null ? await m_DbSet.AnyAsync() : await m_DbSet.AnyAsync(filter);
 		#endregion
 
 		#region Add & Update
@@ -134,19 +149,24 @@ namespace SchoolWeb.API.DataAccessLayer
 		/// Adds an entity.
 		/// </summary>
 		/// <param name="entity">The entity to add</param>
-		public void Add(T entity)
+		public async Task AddAsync(T entity)
 		{
-			m_DbSet.Add(entity);
+			await m_DbSet.AddAsync(entity);
 		}
 
 		/// <summary>
-		/// Updates an entity.
+		/// Updates an entity. The Attach and Entry(entity).State = EntityState.Modified operations are typically not asynchronous 
+		/// because they are in-memory operations. The database is not accessed until SaveChanges or SaveChangesAsync is called. 
+		/// As a result, the Update operation itself is not inherently asynchronous because it doesn't involve I/O operations.
+		/// But just to maintain a consistent API, the method signature is intentionally marked as if it is asynchronous but it is
+		/// actually a method with synchronous operations.
 		/// </summary>
 		/// <param name="entity">The entity to add</param>
-		public void Update(T entity)
+		public Task UpdateAsync(T entity)
 		{
 			m_DbSet.Attach(entity);
 			m_DbContext.Entry(entity).State = EntityState.Modified;
+			return Task.CompletedTask;
 		}
 
 		/// <summary>
@@ -154,12 +174,12 @@ namespace SchoolWeb.API.DataAccessLayer
 		/// </summary>
 		/// <param name="entity">The entity to add or update</param>
 		/// <param name="shouldAdd">To know if we should add or update</param>
-		public void AddOrUpdate(T entity, bool shouldAdd)
+		public async Task AddOrUpdateAsync(T entity, bool shouldAdd)
 		{
 			if (shouldAdd)
-				Add(entity);
+				await AddAsync(entity);
 			else
-				Update(entity);
+				await UpdateAsync(entity);
 		}
 		#endregion
 
@@ -168,9 +188,9 @@ namespace SchoolWeb.API.DataAccessLayer
 		/// Deletes an entity based on entity id.
 		/// </summary>
 		/// <param name="id">The entity id</param>
-		public void Delete(object id)
+		public async Task DeleteAsync(object id)
 		{
-			T getObjById = m_DbSet.Find(id);
+			T getObjById = await m_DbSet.FindAsync(id);
 			m_DbSet.Remove(getObjById);
 		}
 
@@ -178,9 +198,10 @@ namespace SchoolWeb.API.DataAccessLayer
 		/// Deletes an entity based on condition.
 		/// </summary>
 		/// <param name="filter">The condition the entities must fulfil to be deleted</param>
-		public void Delete(Expression<Func<T, bool>> filter = null)
+		public async Task DeleteAsync(Expression<Func<T, bool>> filter = null)
 		{
-			m_DbSet.RemoveRange(m_DbSet.Where(filter));
+			var entitiesToDelete = await m_DbSet.Where(filter).ToListAsync();
+			m_DbSet.RemoveRange(entitiesToDelete);
 		}
 		#endregion
 		#endregion

@@ -51,7 +51,8 @@ namespace SchoolWeb.API.Controllers.Implementations
 		[Authorize]
 		public async Task<IActionResult> Logout()
 		{
-			CustomResponse response = await _service.Logout();
+			string currentUserName = HttpContext.User.Identity.Name;
+			CustomResponse response = await _service.Logout(currentUserName);
 			return response.ToActionResult();
 		}
 		#endregion
