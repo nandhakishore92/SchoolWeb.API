@@ -205,7 +205,7 @@ namespace SchoolWeb.API.Services.Implementations
 			if (!changePasswordResult.Succeeded)
 			{
 				string errorDescription = string.Join(", ", changePasswordResult.Errors.Select(x => x.Description));
-				_logger.LogWarningWithPrefix($"'{userName}' has tried to reset his/her password. But error occurred - {errorDescription}");
+				_logger.LogCriticalWithPrefix($"'{userName}' has tried to reset his/her password. But error occurred - {errorDescription}");
 				return new CustomResponse(400, errorDescription);
 			}
 
@@ -280,7 +280,7 @@ namespace SchoolWeb.API.Services.Implementations
 				return new CustomResponse(409, $"Role - {roleDto.Name} already exists!");
 			}
 
-			await _roleManager.CreateAsync(new ApplicationRole(roleDto));
+			await _roleManager.CreateAsync(new ApplicationRole(roleDto, currentUserName));
 			_logger.LogInformationWithPrefix($"'{currentUserName}' has successfully created a new role '{roleDto.Name}'.");
 			return new CustomResponse(200, $"Role - {roleDto.Name} created successfully!");
 		}

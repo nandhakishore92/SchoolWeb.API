@@ -7,8 +7,5 @@ namespace SchoolWeb.API.Dtos.Account
 		[Required]
 		[DataType(DataType.Password)]
 		public string Password { get; set; }
-
-		public UserLiteDto(): base()
-		{ }
 	}
 }

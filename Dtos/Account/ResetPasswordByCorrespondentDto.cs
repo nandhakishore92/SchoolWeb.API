@@ -6,8 +6,5 @@ namespace SchoolWeb.API.Dtos.Account
 	{
 		[Required]
 		public string UserName { get; set; }
-
-		public ResetPasswordByCorrespondentDto() : base()
-		{ }
 	}
 }

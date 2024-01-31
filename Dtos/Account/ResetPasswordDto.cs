@@ -7,8 +7,5 @@ namespace SchoolWeb.API.Dtos.Account
 		[Required]
 		[DataType(DataType.Password)]
 		public string CurrentPassword { get; set; }
-
-		public ResetPasswordDto(): base()
-		{ }
 	}
 }

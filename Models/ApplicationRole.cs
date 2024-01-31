@@ -11,10 +11,10 @@ namespace SchoolWeb.API.Models
 		public ApplicationRole(): base()
 		{ }
 
-		public ApplicationRole(RoleDto roleDto) : base(roleDto.Name)
+		public ApplicationRole(RoleDto roleDto, string createdBy) : base(roleDto.Name)
 		{
 			Description = roleDto.Description;
-			CreatedBy = roleDto.CreatedBy;
+			CreatedBy = createdBy;
 			CreatedDate = DateTime.Now;
 		}
 	}
