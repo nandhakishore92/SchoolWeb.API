@@ -12,7 +12,7 @@ namespace SchoolWeb.API.DataAccessLayer
 {
     public class UnitOfWork : IUnitOfWork
 	{
-        private SchoolDbContext m_DbContext;
+        private readonly SchoolDbContext m_DbContext;
         private IRepository<AcademicYear> m_AcademicYearRepository;
         private IRepository<User> m_UserRepository;
         private IRepository<Role> m_RoleRepository;

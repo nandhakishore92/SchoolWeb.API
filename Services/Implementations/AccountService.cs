@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using SchoolWeb.API.Controllers.Implementations;
 using SchoolWeb.API.Dtos.Account;
 using SchoolWeb.API.Models;
 using SchoolWeb.API.Services.Interfaces;
@@ -52,11 +51,18 @@ namespace SchoolWeb.API.Services.Implementations
 			};
 			var createUserResult = await _userManager.CreateAsync(user, userDto.Password);
 			if (!createUserResult.Succeeded)
-				return new CustomResponse(400, string.Join(", ", createUserResult.Errors.Select(x => x.Description)));
+			{
+				string errorDescription = string.Join(", ", createUserResult.Errors.Select(x => x.Description));
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to register an user '{userDto.UserName}'. But error occurred - {errorDescription}");
+				return new CustomResponse(400, errorDescription);
+			}
 
 			var response = await AssignRolesToUser(user, userDto.AssignedRoles);
 			if (response.IsBadResponse())
+			{
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to register an user '{userDto.UserName}'. But error occurred - {response.Message}");
 				return response;
+			}
 
 			_logger.LogInformationWithPrefix($"'{currentUserName}' has successfully registered a new user '{userDto.UserName}'.");
 			return new CustomResponse(201, $"User - {userDto.UserName} created successfully!");
@@ -119,7 +125,10 @@ namespace SchoolWeb.API.Services.Implementations
 		{
 			var user = await _userManager.FindByNameAsync(userName);
 			if (user == null)
+			{
+				_logger.LogCriticalWithPrefix($"'{currentUserName}' has tried to update an user '{userName}'. But the user does not exist.");
 				return new CustomResponse(404, $"User - {userName} does not exist.");
+			}
 
 			user.Email = userDto.Email;
 			user.PhoneNumber = userDto.PhoneNumber;
@@ -130,30 +139,50 @@ namespace SchoolWeb.API.Services.Implementations
 
 			var updateUserResult = await _userManager.UpdateAsync(user);
 			if (!updateUserResult.Succeeded)
-				return new CustomResponse(400, string.Join(", ", updateUserResult.Errors.Select(x => x.Description)));
+			{
+				string errorDescription = string.Join(", ", updateUserResult.Errors.Select(x => x.Description));
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to update an user '{userName}'. But error occurred - {errorDescription}");
+				return new CustomResponse(400, errorDescription);
+			}
 
 			await _userManager.RemoveFromRolesAsync(user, await _userManager.GetRolesAsync(user));
 			var response = await AssignRolesToUser(user, userDto.AssignedRoles);
 			if (response.IsBadResponse())
+			{
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to update an user '{userName}'. But error occurred - {response.Message}");
 				return response;
+			}
 
+			_logger.LogInformationWithPrefix($"'{currentUserName}' has successfully updated the user '{userName}'.");
 			return new CustomResponse(200, $"User - {userName} updated successfully!");
 		}
 
-		public async Task<CustomResponse> DeleteSpecificUser(string userName)
+		public async Task<CustomResponse> DeleteSpecificUser(string currentUserName, string userName)
 		{
 			var user = await _userManager.FindByNameAsync(userName);
 			if (user == null)
+			{
+				_logger.LogCriticalWithPrefix($"'{currentUserName}' has tried to delete an user '{userName}'. But the user does not exist.");
 				return new CustomResponse(404, $"User - {userName} does not exist.");
+			}
 
 			var deleteUserRolesResult = await _userManager.RemoveFromRolesAsync(user, await _userManager.GetRolesAsync(user));
 			if (!deleteUserRolesResult.Succeeded)
-				return new CustomResponse(400, string.Join(", ", deleteUserRolesResult.Errors.Select(x => x.Description)));
+			{
+				string errorDescription = string.Join(", ", deleteUserRolesResult.Errors.Select(x => x.Description));
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to delete an user '{userName}'. But error occurred - {errorDescription}");
+				return new CustomResponse(400, errorDescription);
+			}
 
 			var deleteUserResult = await _userManager.DeleteAsync(user);
 			if (!deleteUserResult.Succeeded)
-				return new CustomResponse(400, string.Join(", ", deleteUserResult.Errors.Select(x => x.Description)));
+			{
+				string errorDescription = string.Join(", ", deleteUserResult.Errors.Select(x => x.Description));
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to delete an user '{userName}'. But error occurred - {errorDescription}");
+				return new CustomResponse(400, errorDescription);
+			}
 
+			_logger.LogInformationWithPrefix($"'{currentUserName}' has successfully deleted the user '{userName}'.");
 			return new CustomResponse(200, $"User - {userName} deleted successfully!");
 		}
 
@@ -161,21 +190,36 @@ namespace SchoolWeb.API.Services.Implementations
 		{
 			var user = await _userManager.FindByNameAsync(userName);
 			if (user == null)
+			{
+				_logger.LogCriticalWithPrefix($"'{userName}' has tried to reset his/her password. But the user does not exist.");
 				return new CustomResponse(404, $"User - {userName} does not exist.");
+			}
 
 			if (passwordDto.NewPassword != passwordDto.ConfirmNewPassword)
+			{
+				_logger.LogWarningWithPrefix($"'{userName}' has tried to reset his/her password. But the new password and confirm new password do not match.");
 				return new CustomResponse(400, "New password and confirm new password do not match.");
+			}
 
 			var changePasswordResult = await _userManager.ChangePasswordAsync(user, passwordDto.CurrentPassword, passwordDto.NewPassword);
 			if (!changePasswordResult.Succeeded)
-				return new CustomResponse(400, string.Join(", ", changePasswordResult.Errors.Select(x => x.Description)));
+			{
+				string errorDescription = string.Join(", ", changePasswordResult.Errors.Select(x => x.Description));
+				_logger.LogWarningWithPrefix($"'{userName}' has tried to reset his/her password. But error occurred - {errorDescription}");
+				return new CustomResponse(400, errorDescription);
+			}
 
 			user.UpdatedBy = userName;
 			user.UpdatedDate = DateTime.Now;
 			var updateUserResult = await _userManager.UpdateAsync(user);
 			if (!updateUserResult.Succeeded)
+			{
+				string errorDescription = string.Join(", ", updateUserResult.Errors.Select(x => x.Description));
+				_logger.LogWarningWithPrefix($"'{userName}' has tried to reset his/her password. But error occurred - {errorDescription}");
 				return new CustomResponse(400, string.Join(", ", updateUserResult.Errors.Select(x => x.Description)));
+			}
 
+			_logger.LogInformationWithPrefix($"'{userName}' has successfully reset his/her password.");
 			return new CustomResponse(200, $"Password for user - {userName} changed successfully!");
 		}
 
@@ -184,36 +228,60 @@ namespace SchoolWeb.API.Services.Implementations
 			string userName = passwordDto.UserName;
 			var user = await _userManager.FindByNameAsync(userName);
 			if (user == null)
+			{
+				_logger.LogCriticalWithPrefix($"'{currentUserName}' has tried to reset password for the user '{userName}'. But the user does not exist.");
 				return new CustomResponse(404, $"User - {userName} does not exist.");
+			}
 
 			if (passwordDto.NewPassword != passwordDto.ConfirmNewPassword)
+			{
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to reset password for the user '{userName}'. But the new password and confirm new password do not match.");
 				return new CustomResponse(400, "New password and confirm new password do not match.");
+			}
 
 			var removePasswordResult = await _userManager.RemovePasswordAsync(user);
 			if (!removePasswordResult.Succeeded)
-				return new CustomResponse(400, string.Join(", ", removePasswordResult.Errors.Select(x => x.Description)));
+			{
+				string errorDescription = string.Join(", ", removePasswordResult.Errors.Select(x => x.Description));
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to reset password for the user '{userName}'. But error occurred - {errorDescription}");
+				return new CustomResponse(400, errorDescription);
+			}
 
 			var addPasswordResult = await _userManager.AddPasswordAsync(user, passwordDto.NewPassword);
 			if (!addPasswordResult.Succeeded)
-				return new CustomResponse(400, string.Join(", ", addPasswordResult.Errors.Select(x => x.Description)));
+			{
+				string errorDescription = string.Join(", ", addPasswordResult.Errors.Select(x => x.Description));
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to reset password for the user '{userName}'. But error occurred - {errorDescription}");
+				return new CustomResponse(400, errorDescription);
+			}
 
 			user.UpdatedBy = currentUserName;
 			user.UpdatedDate = DateTime.Now;
 			var updateUserResult = await _userManager.UpdateAsync(user);
 			if (!updateUserResult.Succeeded)
-				return new CustomResponse(400, string.Join(", ", updateUserResult.Errors.Select(x => x.Description)));
+			{
+				string errorDescription = string.Join(", ", updateUserResult.Errors.Select(x => x.Description));
+				_logger.LogWarningWithPrefix($"'{userName}' has tried to reset his/her password. But error occurred - {errorDescription}");
+				return new CustomResponse(400, errorDescription);
+			}
 
+			_logger.LogInformationWithPrefix($"'{currentUserName}' has successfully reset password for the user '{userName}'.");
 			return new CustomResponse(200, $"Password for user - {userName} reset successfully by correspondent - {currentUserName}!");
 		}
 		#endregion
 
 		#region Role Management
-		public async Task<CustomResponse> CreateRole(RoleDto roleDto)
+		public async Task<CustomResponse> CreateRole(string currentUserName, RoleDto roleDto)
 		{
 			if (await _roleManager.RoleExistsAsync(roleDto.Name))
+			{
+				_logger.LogWarningWithPrefix($"'{currentUserName}' has tried to create a new role - '{roleDto.Name}' which already exists.");
+
 				return new CustomResponse(409, $"Role - {roleDto.Name} already exists!");
+			}
 
 			await _roleManager.CreateAsync(new ApplicationRole(roleDto));
+			_logger.LogInformationWithPrefix($"'{currentUserName}' has successfully created a new role '{roleDto.Name}'.");
 			return new CustomResponse(200, $"Role - {roleDto.Name} created successfully!");
 		}
 

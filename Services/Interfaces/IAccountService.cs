@@ -20,7 +20,7 @@ namespace SchoolWeb.API.Services.Interfaces
 
 		Task<CustomResponse> UpdateUser(string currentUserName, string userName, UserWithoutUsernameAndPasswordDto userDto);
 
-		Task<CustomResponse> DeleteSpecificUser(string userName);
+		Task<CustomResponse> DeleteSpecificUser(string currentUserName, string userName);
 
 		Task<CustomResponse> ResetSpecificUserPassword(string currentUserName, ResetPasswordByCorrespondentDto passwordDto);
 
@@ -28,7 +28,7 @@ namespace SchoolWeb.API.Services.Interfaces
 		#endregion
 
 		#region Role Management
-		Task<CustomResponse> CreateRole(RoleDto roleDto);
+		Task<CustomResponse> CreateRole(string currentUserName, RoleDto roleDto);
 		#endregion
 	}
 }

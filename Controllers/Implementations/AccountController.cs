@@ -113,7 +113,8 @@ namespace SchoolWeb.API.Controllers.Implementations
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 
-			CustomResponse response = await _service.DeleteSpecificUser(userSuperLiteDto.UserName);
+			string currentUserName = HttpContext.User.Identity.Name;
+			CustomResponse response = await _service.DeleteSpecificUser(currentUserName, userSuperLiteDto.UserName);
 			return response.ToActionResult();
 		}
 
@@ -153,7 +154,8 @@ namespace SchoolWeb.API.Controllers.Implementations
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 
-			CustomResponse response = await _service.CreateRole(roleDto);
+			string currentUserName = HttpContext.User.Identity.Name;
+			CustomResponse response = await _service.CreateRole(currentUserName, roleDto);
 			return response.ToActionResult();
 		}
 		#endregion
