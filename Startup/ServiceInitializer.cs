@@ -29,7 +29,6 @@ namespace SchoolWeb.API.Startup
 		private static void ConfigureNLog(WebApplicationBuilder builder)
 		{
 			builder.Logging.ClearProviders();
-			builder.Logging.SetMinimumLevel(LogLevel.Information);
 			// This will take take care of serving the ILogger<T> dependency injection.
 			builder.Host.UseNLog();
 		}
