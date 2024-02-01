@@ -30,7 +30,10 @@ namespace SchoolWeb.API.Startup
 		{
 			builder.Logging.ClearProviders();
 			// This will take take care of serving the ILogger<T> dependency injection.
-			builder.Host.UseNLog();
+			builder.Host.UseNLog(new NLogAspNetCoreOptions()
+			{
+				LoggingConfigurationSectionName = "NLog"
+			});
 		}
 
 		private static void RegisterDbContextAndIdentityServices(this IServiceCollection services, WebApplicationBuilder builder)
