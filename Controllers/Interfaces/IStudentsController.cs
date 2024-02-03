@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SchoolWeb.API.Dtos.Accounts;
 using SchoolWeb.API.Dtos.Students;
 using SchoolWeb.API.Models;
 using SchoolWeb.API.Utilities;
 
 namespace SchoolWeb.API.Controllers.Interfaces
 {
-    public interface IStudentsController
+	public interface IStudentsController
     {
 		#region Add
 		[HttpPost]
