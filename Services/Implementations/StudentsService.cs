@@ -17,25 +17,25 @@ namespace SchoolWeb.API.Services.Implementations
         { }
 
         #region Student Details
-        public async Task<StudentDetailsListDto> GetRegisteredStudentDetailsList(Expression<Func<Student, bool>> filter, bool rteOnly)
-        {
-            List<StudentDetailsDto> students = (await UnitOfWork.StudentRepository
-                    .GetAsync(filter: filter,
-                        orderBy: stu => stu.OrderBy(s => s.ClassId).ThenBy(s => s.SectionId),
-                        includes: new List<Expression<Func<Student, object>>>
-                        {
-                            stu => stu.Class,
-                            stu => stu.Section,
-                            stu => stu.Locality,
-                            stu => stu.FeesHistories,
-                            stu => stu.RouteBusStop
-                        }))
-					.Select(student => new StudentDetailsDto(student))
-                    .ToList();
+     //   public async Task<StudentDetailsListDto> GetRegisteredStudentDetailsList(Expression<Func<Student, bool>> filter, bool rteOnly)
+     //   {
+     //       List<StudentDto> students = (await UnitOfWork.StudentRepository
+     //               .GetAsync(filter: filter,
+     //                   orderBy: stu => stu.OrderBy(s => s.ClassId).ThenBy(s => s.SectionId),
+     //                   includes: new List<Expression<Func<Student, object>>>
+     //                   {
+     //                       stu => stu.Class,
+     //                       stu => stu.Section,
+     //                       stu => stu.Locality,
+     //                       stu => stu.FeesHistories,
+     //                       stu => stu.RouteBusStop
+     //                   }))
+					//.Select(student => new StudentDto(student))
+     //               .ToList();
 
-            string title = rteOnly ? "Registered RTE Students Details" : "Registered Students Details";
-            return new StudentDetailsListDto(students, title);
-        }
+     //       string title = rteOnly ? "Registered RTE Students Details" : "Registered Students Details";
+     //       return new StudentDetailsListDto(students, title);
+     //   }
         #endregion
     }
 }

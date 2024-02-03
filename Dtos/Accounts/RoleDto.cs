@@ -1,4 +1,4 @@
-﻿namespace SchoolWeb.API.Dtos.Account
+﻿namespace SchoolWeb.API.Dtos.Accounts
 {
 	public class RoleDto
 	{

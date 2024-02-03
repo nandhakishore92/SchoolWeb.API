@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolWeb.API.Controllers.Interfaces;
-using SchoolWeb.API.Dtos.Account;
+using SchoolWeb.API.Dtos.Accounts;
 using SchoolWeb.API.Models;
 using SchoolWeb.API.Services.Interfaces;
 using SchoolWeb.API.Utilities;
@@ -11,29 +11,15 @@ namespace SchoolWeb.API.Controllers.Implementations
 	[ApiController]
 	[Route("/api/[controller]")]
 	[Authorize]
-	public class AccountController : BaseController, IAccountController
+	public class AccountsController : BaseController, IAccountsController
 	{
-		private readonly IAccountService _service;
-		public AccountController(IAccountService service)
+		private readonly IAccountsService _service;
+		public AccountsController(IAccountsService service)
 		{
 			_service = service;
 		}
 
-		#region Registration and Authentication
-		[HttpPost]
-		[Route("register")]
-		[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<IActionResult> Register([FromBody] UserDto userDto)
-		{
-			if (!ModelState.IsValid)
-				return BadRequest(ModelState);
-
-			string currentUserName = HttpContext.User.Identity.Name;
-			CustomResponse response = await _service.Register(currentUserName, userDto);
-			string createdLocation = CreateUrl(nameof(GetUser), nameof(AccountController), new { id = userDto.UserName });
-			return response.ToActionResult(createdLocation);
-		}
-
+		#region Authentication
 		[HttpPost]
 		[Route("login")]
 		[AllowAnonymous]
@@ -58,29 +44,43 @@ namespace SchoolWeb.API.Controllers.Implementations
 		#endregion
 
 		#region User Management
-		[HttpGet]
-		[Route("get-users")]
+		[HttpPost]
+		[Route("users")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<IActionResult> GetUsers()
+		public async Task<IActionResult> Register([FromBody] UserDto userDto)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			string currentUserName = HttpContext.User.Identity.Name;
+			CustomResponse response = await _service.Register(currentUserName, userDto);
+			string createdLocation = CreateUrl(nameof(GetUser), nameof(AccountsController), new { id = userDto.UserName });
+			return response.ToActionResult(createdLocation);
+		}
+
+		[HttpGet]
+		[Route("users/{userName}")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		public async Task<ActionResult<UserWithoutPasswordDto>> GetUser(string userName)
+		{
+			var user = await _service.GetUser(userName);
+			if (user == null)
+				return NotFound(userName);
+
+			return Ok(user);
+		}
+		
+		[HttpGet]
+		[Route("users")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		public async Task<ActionResult<List<UserWithoutPasswordDto>>> GetUsers()
 		{
 			var users = await _service.GetUsers();
 			return Ok(users);
 		}
 
-		[HttpGet]
-		[Route("get-user/{userName}")]
-		[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<IActionResult> GetUser(string userName)
-		{
-			var user = await _service.GetUser(userName);
-			if(user == null)
-				return NotFound(userName);
-
-			return Ok(user);
-		}
-
 		[HttpPut]
-		[Route("update-current-user")]
+		[Route("users/current")]
 		[Authorize]
 		public async Task<IActionResult> UpdateCurrentUser([FromBody] UserWithoutUsernameAndPasswordDto userDto)
 		{
@@ -93,7 +93,7 @@ namespace SchoolWeb.API.Controllers.Implementations
 		}
 
 		[HttpPut]
-		[Route("update-specific-user")]
+		[Route("users")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
 		public async Task<IActionResult> UpdateSpecificUser([FromBody] UserWithoutPasswordDto updateSpecificUserDto)
 		{
@@ -105,21 +105,8 @@ namespace SchoolWeb.API.Controllers.Implementations
 			return response.ToActionResult();
 		}
 
-		[HttpDelete]
-		[Route("delete-specific-user")]
-		[Authorize(Roles = RolesConstant.Correspondent)]
-		public async Task<IActionResult> DeleteSpecificUser([FromBody] UserSuperLiteDto userSuperLiteDto)
-		{
-			if (!ModelState.IsValid)
-				return BadRequest(ModelState);
-
-			string currentUserName = HttpContext.User.Identity.Name;
-			CustomResponse response = await _service.DeleteSpecificUser(currentUserName, userSuperLiteDto.UserName);
-			return response.ToActionResult();
-		}
-
 		[HttpPut]
-		[Route("reset-current-user-password")]
+		[Route("users/current/password")]
 		[Authorize]
 		public async Task<IActionResult> ResetCurrentUserPassword([FromBody] ResetPasswordDto passwordDto)
 		{
@@ -132,7 +119,7 @@ namespace SchoolWeb.API.Controllers.Implementations
 		}
 
 		[HttpPut]
-		[Route("reset-specific-user-password")]
+		[Route("users/password")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
 		public async Task<IActionResult> ResetSpecificUserPassword([FromBody] ResetPasswordByCorrespondentDto passwordDto)
 		{
@@ -143,11 +130,24 @@ namespace SchoolWeb.API.Controllers.Implementations
 			var response = await _service.ResetSpecificUserPassword(currentUserName, passwordDto);
 			return response.ToActionResult();
 		}
+
+		[HttpDelete]
+		[Route("users")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		public async Task<IActionResult> DeleteSpecificUser([FromBody] UserSuperLiteDto userSuperLiteDto)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			string currentUserName = HttpContext.User.Identity.Name;
+			CustomResponse response = await _service.DeleteSpecificUser(currentUserName, userSuperLiteDto.UserName);
+			return response.ToActionResult();
+		}
 		#endregion
 
 		#region Role Management
 		[HttpPost]
-		[Route("create-role")]
+		[Route("roles")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
 		public async Task<IActionResult> CreateRole([FromBody] RoleDto roleDto)
 		{

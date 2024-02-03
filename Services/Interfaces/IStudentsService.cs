@@ -7,7 +7,7 @@ namespace SchoolWeb.API.Services.Interfaces
     public interface IStudentsService : IBaseService
     {
 		#region Student Details
-		Task<StudentDetailsListDto> GetRegisteredStudentDetailsList(Expression<Func<Student, bool>> filter, bool rteOnly);
+		//Task<StudentDetailsListDto> GetRegisteredStudentDetailsList(Expression<Func<Student, bool>> filter, bool rteOnly);
         #endregion
     }
 }

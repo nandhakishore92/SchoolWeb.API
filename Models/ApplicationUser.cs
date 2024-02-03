@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SchoolWeb.API.Dtos.Account;
 
 namespace SchoolWeb.API.Models
 {

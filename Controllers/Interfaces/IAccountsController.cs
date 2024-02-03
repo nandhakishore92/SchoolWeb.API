@@ -1,18 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SchoolWeb.API.Dtos.Account;
+using SchoolWeb.API.Dtos.Accounts;
 using SchoolWeb.API.Utilities;
 
 namespace SchoolWeb.API.Controllers.Interfaces
 {
-	public interface IAccountController
+	public interface IAccountsController
 	{
-		#region Registration and Authentication
-		[HttpPost]
-		[Route("register")]
-		[Authorize(Roles = RolesConstant.Correspondent)]
-		Task<IActionResult> Register([FromBody] UserDto userDto);
-		
+		#region Authentication
 		[HttpPost]
 		[Route("login")]
 		[AllowAnonymous]
@@ -25,45 +20,50 @@ namespace SchoolWeb.API.Controllers.Interfaces
 		#endregion
 
 		#region User Management
-		[HttpGet]
-		[Route("get-users")]
+		[HttpPost]
+		[Route("users")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
-		Task<IActionResult> GetUsers();
+		Task<IActionResult> Register([FromBody] UserDto userDto);
 
 		[HttpGet]
-		[Route("get-user/{userName}")]
+		[Route("users/{userName}")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
-		Task<IActionResult> GetUser(string userName);
+		Task<ActionResult<UserWithoutPasswordDto>> GetUser(string userName);
+
+		[HttpGet]
+		[Route("users")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		Task<ActionResult<List<UserWithoutPasswordDto>>> GetUsers();
 
 		[HttpPut]
-		[Route("update-current-user")]
+		[Route("users/current")]
 		[Authorize]
 		Task<IActionResult> UpdateCurrentUser([FromBody] UserWithoutUsernameAndPasswordDto userDto);
 
 		[HttpPut]
-		[Route("update-specific-user")]
+		[Route("users")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
 		Task<IActionResult> UpdateSpecificUser([FromBody] UserWithoutPasswordDto updateSpecificUserDto);
 
-		[HttpDelete]
-		[Route("delete-specific-user")]
-		[Authorize(Roles = RolesConstant.Correspondent)]
-		Task<IActionResult> DeleteSpecificUser([FromBody] UserSuperLiteDto userSuperLiteDto);
+		[HttpPut]
+		[Route("users/current/password")]
+		[Authorize]
+		Task<IActionResult> ResetCurrentUserPassword([FromBody] ResetPasswordDto passwordDto);
 
 		[HttpPut]
-		[Route("reset-specific-user-password")]
+		[Route("users/password")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
 		Task<IActionResult> ResetSpecificUserPassword([FromBody] ResetPasswordByCorrespondentDto userLiteDto);
 
-		[HttpPut]
-		[Route("reset-current-user-password")]
-		[Authorize]
-		Task<IActionResult> ResetCurrentUserPassword([FromBody] ResetPasswordDto passwordDto);
+		[HttpDelete]
+		[Route("users")]
+		[Authorize(Roles = RolesConstant.Correspondent)]
+		Task<IActionResult> DeleteSpecificUser([FromBody] UserSuperLiteDto userSuperLiteDto);
 		#endregion
 
 		#region Role Management
 		[HttpPost]
-		[Route("create-role")]
+		[Route("roles")]
 		[Authorize(Roles = RolesConstant.Correspondent)]
 		Task<IActionResult> CreateRole([FromBody] RoleDto roleDto);
 		#endregion

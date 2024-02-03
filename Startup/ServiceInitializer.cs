@@ -96,7 +96,7 @@ namespace SchoolWeb.API.Startup
 
 			// As it is light weight, almost no state, it makes sense to AddTransient here.
 			services.AddTransient<IStudentsService, StudentsService>();
-			services.AddTransient<IAccountService, AccountService>();
+			services.AddTransient<IAccountsService, AccountsService>();
 		}
 
 		private static void RegisterSwaggerService(this IServiceCollection services)

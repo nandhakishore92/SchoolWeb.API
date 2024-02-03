@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SchoolWeb.API.Dtos.Account;
 
 namespace SchoolWeb.API.Models
 {
@@ -10,12 +9,5 @@ namespace SchoolWeb.API.Models
 		public DateTime CreatedDate { get; set; }
 		public ApplicationRole(): base()
 		{ }
-
-		public ApplicationRole(RoleDto roleDto, string createdBy) : base(roleDto.Name)
-		{
-			Description = roleDto.Description;
-			CreatedBy = createdBy;
-			CreatedDate = DateTime.Now;
-		}
 	}
 }

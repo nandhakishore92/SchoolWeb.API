@@ -1,7 +1,7 @@
 ﻿using SchoolWeb.API.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace SchoolWeb.API.Dtos.Account
+namespace SchoolWeb.API.Dtos.Accounts
 {
 	public class UserWithoutPasswordDto: UserWithoutUsernameAndPasswordDto
 	{

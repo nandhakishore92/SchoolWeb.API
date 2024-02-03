@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SchoolWeb.API.Dtos.Account
+namespace SchoolWeb.API.Dtos.Accounts
 {
-	public class ResetPasswordByCorrespondentDto : ResetPasswordBaseDto
+	public class UserSuperLiteDto
 	{
 		[Required]
 		public string UserName { get; set; }
